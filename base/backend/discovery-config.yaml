@@ -67,3 +67,13 @@ data:
                 username: COCKROACH_USER
                 password: COCKROACH_PASSWORD
                 database: COCKROACH_DATABASE
+
+          # Grafana Loki (HTTP API on :3100). Optional HTTP basic auth via
+          # username/password; cosy-loki runs auth-less, so no credentials are
+          # mapped and it connects anonymously. Add a `credentials.env` block
+          # (username/password) for a Loki behind basic auth.
+          - id: loki
+            driver: loki
+            match:
+              ref: "grafana/loki"
+              ports: [3100]
