@@ -38,6 +38,13 @@ rules:
       - pods
       - nodes
     verbs: ["get", "list"]
+  # SENSITIVE: proxy to the kubelet Summary API for live PVC volume usage
+  # (datasource "data size"), the only source of volume *usage* vs capacity.
+  # Scoped to get only; the metrics path degrades to null if this is removed.
+  - apiGroups: [""]
+    resources:
+      - nodes/proxy
+    verbs: ["get"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
