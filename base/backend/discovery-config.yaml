@@ -39,8 +39,11 @@ data:
               env:
                 password: REDIS_PASSWORD
 
-          # InfluxDB 2.x — best-effort env mapping; tokens/orgs may need a
-          # manual override before browsing works.
+          # InfluxDB 2.x authenticates with an API token against an org+bucket, so
+          # the engine maps username->org, password->token, database->bucket.
+          # The admin token is usually NOT in the pod env (auto-generated at init),
+          # so `password` stays UNRESOLVED and the token must be entered as a
+          # manual override; org+bucket auto-resolve from the init env.
           - id: influxdb
             driver: influxdb
             match:
@@ -48,14 +51,19 @@ data:
               ports: [8086]
             credentials:
               env:
-                username: DOCKER_INFLUXDB_INIT_USERNAME
-                password: DOCKER_INFLUXDB_INIT_PASSWORD
+                username: DOCKER_INFLUXDB_INIT_ORG
+                password: DOCKER_INFLUXDB_INIT_ADMIN_TOKEN
                 database: DOCKER_INFLUXDB_INIT_BUCKET
 
-          # CockroachDB speaks the PostgreSQL wire protocol; no standard cred env,
-          # so it lists on discovery and creds are added via manual override.
+          # CockroachDB speaks the PostgreSQL wire protocol (port 26257). Standard
+          # cockroach image env: COCKROACH_USER/PASSWORD/DATABASE.
           - id: cockroachdb
             driver: postgresql
             match:
               ref: "cockroach"
               ports: [26257]
+            credentials:
+              env:
+                username: COCKROACH_USER
+                password: COCKROACH_PASSWORD
+                database: COCKROACH_DATABASE
