@@ -1,0 +1,61 @@
+# Per-environment discovery detector rules (ARCHITECTURE.md §8), mounted into the
+# backend as an additional Spring config file (see deployment.yaml:
+# SPRING_CONFIG_ADDITIONAL_LOCATION=/config/). Each detector maps a workload
+# container image (regex over repository:tag) to an engine driver, and names the
+# env vars that carry each credential field — Strata resolves them by walking the
+# matched workload's container env (literal / secretKeyRef / configMapKeyRef /
+# envFrom). Host+port come from the workload's Service, not from here.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: strata-backend-discovery
+data:
+  application.yaml: |
+    strata:
+      discovery:
+        detectors:
+          # PostgreSQL — official `postgres` image convention. Covers every
+          # postgres workload in the cluster (cosy*, mailservice, medals, n8n,
+          # project-manager, strata's own state DB, ...).
+          - id: postgres
+            driver: postgresql
+            match:
+              ref: "postgres"
+              ports: [5432]
+            credentials:
+              env:
+                username: POSTGRES_USER
+                password: POSTGRES_PASSWORD
+                database: POSTGRES_DB
+
+          # Redis — listed on discovery; the stock image often has no auth env,
+          # so credentials may resolve as "unresolved" and need a manual override.
+          - id: redis
+            driver: redis
+            match:
+              ref: "redis"
+              ports: [6379]
+            credentials:
+              env:
+                password: REDIS_PASSWORD
+
+          # InfluxDB 2.x — best-effort env mapping; tokens/orgs may need a
+          # manual override before browsing works.
+          - id: influxdb
+            driver: influxdb
+            match:
+              ref: "influxdb"
+              ports: [8086]
+            credentials:
+              env:
+                username: DOCKER_INFLUXDB_INIT_USERNAME
+                password: DOCKER_INFLUXDB_INIT_PASSWORD
+                database: DOCKER_INFLUXDB_INIT_BUCKET
+
+          # CockroachDB speaks the PostgreSQL wire protocol; no standard cred env,
+          # so it lists on discovery and creds are added via manual override.
+          - id: cockroachdb
+            driver: postgresql
+            match:
+              ref: "cockroach"
+              ports: [26257]

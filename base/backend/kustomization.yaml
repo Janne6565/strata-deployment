@@ -4,5 +4,6 @@ resources:
   - serviceaccount.yaml
   - rbac.yaml
   - configmap.yaml
+  - discovery-config.yaml
   - deployment.yaml
   - service.yaml

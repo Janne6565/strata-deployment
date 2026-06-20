@@ -31,6 +31,11 @@ spec:
               containerPort: 8080
           # Non-secret config (DB URL/user, owner username) from a ConfigMap;
           # passwords + JWT secret from a Secret (see docs/secrets-required.md).
+          env:
+            # Load the discovery detector rules mounted at /config/application.yaml
+            # (merged over the packaged application.yaml).
+            - name: SPRING_CONFIG_ADDITIONAL_LOCATION
+              value: optional:/config/
           envFrom:
             - configMapRef:
                 name: strata-backend-config
@@ -75,6 +80,13 @@ spec:
             # Boot / Tomcat extract work files here).
             - name: tmp
               mountPath: /tmp
+            # Discovery detector rules (read-only).
+            - name: discovery-config
+              mountPath: /config
+              readOnly: true
       volumes:
         - name: tmp
           emptyDir: {}
+        - name: discovery-config
+          configMap:
+            name: strata-backend-discovery
