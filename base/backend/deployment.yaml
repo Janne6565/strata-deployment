@@ -41,23 +41,25 @@ spec:
                 name: strata-backend-config
             - secretRef:
                 name: strata-backend-secrets
-          # No Spring Boot Actuator on the classpath, so there is no
-          # /actuator/health endpoint or management port — probe the HTTP
-          # socket instead. (Add spring-boot-starter-actuator to switch these
-          # to proper httpGet readiness/liveness probes.)
+          # Spring Boot Actuator health probes (liveness/readiness groups). The
+          # health endpoints are exposed over the main HTTP port and permitted
+          # unauthenticated in SecurityConfig.
           startupProbe:
-            tcpSocket:
+            httpGet:
+              path: /actuator/health
               port: http
             periodSeconds: 5
             failureThreshold: 30
           readinessProbe:
-            tcpSocket:
+            httpGet:
+              path: /actuator/health/readiness
               port: http
             initialDelaySeconds: 10
             periodSeconds: 10
             failureThreshold: 3
           livenessProbe:
-            tcpSocket:
+            httpGet:
+              path: /actuator/health/liveness
               port: http
             initialDelaySeconds: 30
             periodSeconds: 30
