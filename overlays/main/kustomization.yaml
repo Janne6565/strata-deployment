@@ -3,13 +3,14 @@ kind: Kustomization
 # Single environment. Everything lives in the `strata` namespace.
 namespace: strata
 resources:
-  - ../../base
-  - ingress.yaml
+- ../../base
+- ingress.yaml
 # CI (backend/frontend repos) rewrites these tags via
 # `kustomize edit set image` and pushes — ArgoCD then auto-syncs. The values
 # below are placeholders until the first CI run publishes an image.
 images:
-  - name: ghcr.io/janne6565/strata-backend
-    newTag: placeholder
-  - name: ghcr.io/janne6565/strata-frontend
-    newTag: placeholder
+- name: ghcr.io/janne6565/strata-backend
+  newTag: placeholder
+- name: ghcr.io/janne6565/strata-frontend
+  newName: ghcr.io/janne6565/strata-frontend
+  newTag: main-40b7d83
