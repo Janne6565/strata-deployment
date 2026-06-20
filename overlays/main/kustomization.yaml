@@ -14,4 +14,4 @@ images:
     newTag: main-bef92f8
   - name: ghcr.io/janne6565/strata-frontend
     newName: ghcr.io/janne6565/strata-frontend
-    newTag: main-40b7d83
+    newTag: main-f59018e
