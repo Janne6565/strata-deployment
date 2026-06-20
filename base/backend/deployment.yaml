@@ -1,0 +1,80 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      # Dedicated ServiceAccount scoped to the cluster-read RBAC the discovery
+      # engine needs (see rbac.yaml). Never the default ServiceAccount.
+      serviceAccountName: strata-backend
+      imagePullSecrets:
+        - name: ghcr-pull-secret
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: backend
+          image: ghcr.io/janne6565/strata-backend:placeholder
+          ports:
+            - name: http
+              containerPort: 8080
+          # Non-secret config (DB URL/user, owner username) from a ConfigMap;
+          # passwords + JWT secret from a Secret (see docs/secrets-required.md).
+          envFrom:
+            - configMapRef:
+                name: strata-backend-config
+            - secretRef:
+                name: strata-backend-secrets
+          # No Spring Boot Actuator on the classpath, so there is no
+          # /actuator/health endpoint or management port — probe the HTTP
+          # socket instead. (Add spring-boot-starter-actuator to switch these
+          # to proper httpGet readiness/liveness probes.)
+          startupProbe:
+            tcpSocket:
+              port: http
+            periodSeconds: 5
+            failureThreshold: 30
+          readinessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            failureThreshold: 3
+          livenessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 30
+            failureThreshold: 3
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "512Mi"
+            limits:
+              cpu: "1000m"
+              memory: "1Gi"
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+          volumeMounts:
+            # Writable /tmp because the root filesystem is read-only (Spring
+            # Boot / Tomcat extract work files here).
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: tmp
+          emptyDir: {}

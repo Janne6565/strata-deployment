@@ -1,0 +1,13 @@
+# Non-secret backend config. Bound by Spring via ${STRATA_*} placeholders in
+# application.yaml. Secret values (passwords, JWT secret) live in the
+# strata-backend-secrets Secret instead — see docs/secrets-required.md.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: strata-backend-config
+data:
+  STRATA_DB_URL: jdbc:postgresql://postgres:5432/strata
+  STRATA_DB_USERNAME: strata
+  # First-owner bootstrap username (only used when no OWNER exists yet).
+  # The matching STRATA_OWNER_PASSWORD is supplied via the Secret.
+  STRATA_OWNER_USERNAME: owner

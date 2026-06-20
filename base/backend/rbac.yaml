@@ -1,0 +1,54 @@
+# Cluster-scoped read access for the in-cluster discovery engine.
+# Strata's namespace-scope is ALL (strata.kubernetes.namespace-scope=ALL), so a
+# ClusterRole is used. Tighten to namespaced Role/RoleBinding if you ever scope
+# Strata to a fixed set of namespaces.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: strata-backend-discovery
+rules:
+  # Workloads + their pods/services, for discovery and credential anchoring.
+  - apiGroups: [""]
+    resources:
+      - namespaces
+      - pods
+      - services
+      - configmaps
+      - persistentvolumeclaims
+      - endpoints
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["apps"]
+    resources:
+      - deployments
+      - statefulsets
+      - replicasets
+      - daemonsets
+    verbs: ["get", "list", "watch"]
+  # SENSITIVE: secrets read is required for env-walking credential resolution
+  # (secretKeyRef / envFrom). Scoped to get/list only — no write/delete — and
+  # read access is audit-logged by the backend. Keep this rule as narrow as the
+  # deployment model allows.
+  - apiGroups: [""]
+    resources:
+      - secrets
+    verbs: ["get", "list"]
+  # Optional: pod/node metrics if the metrics-server is installed.
+  - apiGroups: ["metrics.k8s.io"]
+    resources:
+      - pods
+      - nodes
+    verbs: ["get", "list"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: strata-backend-discovery
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: strata-backend-discovery
+subjects:
+  - kind: ServiceAccount
+    name: strata-backend
+    # namespace is set by the kustomize namespace transformer (overlays/main).
+    namespace: strata
