@@ -10,7 +10,8 @@ resources:
 # below are placeholders until the first CI run publishes an image.
 images:
 - name: ghcr.io/janne6565/strata-backend
-  newTag: placeholder
+  newName: ghcr.io/janne6565/strata-backend
+  newTag: main-762516a
 - name: ghcr.io/janne6565/strata-frontend
   newName: ghcr.io/janne6565/strata-frontend
   newTag: main-40b7d83
