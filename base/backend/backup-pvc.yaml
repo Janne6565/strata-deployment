@@ -1,6 +1,8 @@
-# Holds the scheduled pg_dump backups written by the backend (BackupService).
-# ReadWriteOnce is sufficient: only the single backend replica mounts it, and the
-# tiered retention policy keeps ~6 compressed dumps, so 1Gi has ample headroom.
+# Holds the scheduled pg_dump backups written by the backend: Strata's own DB plus one
+# subdirectory per discovered PostgreSQL datasource, each with tiered retention (~6 dumps).
+# ReadWriteOnce is sufficient — only the single backend replica mounts it. Sized for many
+# databases; in-place expansion needs a StorageClass with allowVolumeExpansion, otherwise
+# recreate the PVC (backups are non-critical and regenerate on the next scheduled run).
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -9,4 +11,4 @@ spec:
   accessModes: ["ReadWriteOnce"]
   resources:
     requests:
-      storage: 1Gi
+      storage: 20Gi
