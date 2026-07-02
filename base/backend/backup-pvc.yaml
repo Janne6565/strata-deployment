@@ -1,0 +1,12 @@
+# Holds the scheduled pg_dump backups written by the backend (BackupService).
+# ReadWriteOnce is sufficient: only the single backend replica mounts it, and the
+# tiered retention policy keeps ~6 compressed dumps, so 1Gi has ample headroom.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: strata-backend-backups
+spec:
+  accessModes: ["ReadWriteOnce"]
+  resources:
+    requests:
+      storage: 1Gi

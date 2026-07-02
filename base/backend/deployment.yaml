@@ -3,7 +3,15 @@ kind: Deployment
 metadata:
   name: backend
 spec:
+  # Single replica: the in-app @Scheduled backup job (BackupService) runs in every
+  # replica, so scaling out would produce duplicate backups — add a distributed lock
+  # (e.g. ShedLock) before raising this. The backups PVC below is ReadWriteOnce anyway.
   replicas: 1
+  # Recreate (not RollingUpdate): the backups PVC is ReadWriteOnce, so a new pod on a
+  # different node cannot mount it while the old pod still holds it — a rolling update
+  # would deadlock. Tear the old pod down first.
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app: backend
@@ -86,9 +94,16 @@ spec:
             - name: discovery-config
               mountPath: /config
               readOnly: true
+            # Scheduled database backups. Writable despite the read-only root FS;
+            # fsGroup: 1000 (pod securityContext) makes the PVC group-writable.
+            - name: backups
+              mountPath: /backups
       volumes:
         - name: tmp
           emptyDir: {}
         - name: discovery-config
           configMap:
             name: strata-backend-discovery
+        - name: backups
+          persistentVolumeClaim:
+            claimName: strata-backend-backups
