@@ -14,3 +14,8 @@ data:
   # Scheduled pg_dump backups onto the strata-backend-backups PVC (mounted at /backups).
   STRATA_BACKUP_ENABLED: "true"
   STRATA_BACKUP_DIR: /backups
+  # Public frontend URL the backend redirects to after the OAuth (Authentik) dance.
+  STRATA_FRONTEND_URL: https://strata.jannekeipert.de
+  # OAuth callback URI registered in the Authentik strata provider's redirect_uris
+  # (authentik-strata-blueprint). Must match exactly, including scheme and path.
+  STRATA_OAUTH_CALLBACK_URI: https://strata.jannekeipert.de/api/v1/auth/oauth/authentik/callback

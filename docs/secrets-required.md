@@ -17,7 +17,9 @@ kubectl create secret generic strata-backend-secrets \
   --namespace=strata \
   --from-literal=STRATA_DB_PASSWORD=... \
   --from-literal=STRATA_OWNER_PASSWORD=... \
-  --from-literal=STRATA_JWT_SECRET=...
+  --from-literal=STRATA_JWT_SECRET=... \
+  --from-literal=STRATA_OAUTH_CLIENT_ID=... \
+  --from-literal=STRATA_OAUTH_CLIENT_SECRET=...
 ```
 
 - `STRATA_DB_PASSWORD` — must match `POSTGRES_PASSWORD` in `postgres-secrets`.
@@ -25,6 +27,12 @@ kubectl create secret generic strata-backend-secrets \
   after the first login; it is only used while no OWNER user exists.
 - `STRATA_JWT_SECRET` — long random string used to sign access tokens
   (e.g. `openssl rand -base64 48`). Rotating it invalidates all sessions.
+- `STRATA_OAUTH_CLIENT_ID` — OAuth client id for "Login with Authentik". **Must match
+  the value sealed into `authentik-secrets` as `STRATA_OAUTH_CLIENT_ID`** in
+  `cluster-deployment/infrastructure/authentik-secret.sealed.yaml` (the Authentik
+  `strata` provider reads it via `!Env`). Mismatched values break the OIDC flow.
+- `STRATA_OAUTH_CLIENT_SECRET` — matching OAuth client secret; **must match
+  `STRATA_OAUTH_CLIENT_SECRET` in `authentik-secrets`** likewise.
 
 ### `postgres-secrets`
 
