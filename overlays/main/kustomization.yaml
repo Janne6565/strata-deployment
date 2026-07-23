@@ -11,7 +11,7 @@ resources:
 images:
   - name: ghcr.io/janne6565/strata-backend
     newName: ghcr.io/janne6565/strata-backend
-    newTag: main-457cc88
+    newTag: main-853e0ee
   - name: ghcr.io/janne6565/strata-frontend
     newName: ghcr.io/janne6565/strata-frontend
     newTag: main-4f37e2e
