@@ -8,3 +8,4 @@ resources:
   - backup-pvc.yaml
   - deployment.yaml
   - service.yaml
+  - servicemonitor.yaml

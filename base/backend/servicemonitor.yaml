@@ -1,0 +1,21 @@
+# Prometheus scrape of the backend's /actuator/prometheus by the in-cluster Grafana Alloy
+# agent, which forwards to Grafana Cloud (job `strata/backend`). Alloy only selects
+# ServiceMonitors that carry `release` and do NOT carry `app.kubernetes.io/part-of` (see
+# cluster-deployment/infrastructure/grafana-alloy.yaml) — never add part-of here.
+# /actuator is not publicly routed (the Ingress sends only /api to the backend), so the
+# scrape hits the app port unauthenticated from inside the cluster.
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: backend
+  labels:
+    release: prometheus
+spec:
+  selector:
+    matchLabels:
+      app: backend
+  endpoints:
+    - port: http
+      path: /actuator/prometheus
+      interval: 60s
+      scrapeTimeout: 10s
