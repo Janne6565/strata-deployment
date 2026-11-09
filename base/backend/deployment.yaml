@@ -2,6 +2,11 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: backend
+  annotations:
+    # Restart on changes to the ConfigMaps/Secrets the pod uses (Stakater Reloader runs
+    # in the cluster). The discovery detectors are read only at startup, so a detector
+    # edit otherwise needs a manual rollout restart.
+    reloader.stakater.com/auto: "true"
 spec:
   # Single replica: the in-app @Scheduled backup job (BackupService) runs in every
   # replica, so scaling out would produce duplicate backups — add a distributed lock
