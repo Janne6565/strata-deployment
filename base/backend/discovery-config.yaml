@@ -77,3 +77,22 @@ data:
             match:
               ref: "grafana/loki"
               ports: [3100]
+
+          # MinIO (S3 API on :9000). Root credentials come from the standard
+          # MINIO_ROOT_USER/MINIO_ROOT_PASSWORD env (official, quay.io and Bitnami
+          # images; the minio Helm chart maps them from its `existingSecret`).
+          # Root is what lets the engine read exact bucket sizes from the admin
+          # data-usage API; without it sizes fall back to a capped listing.
+          # The ref regex matches the server image (`minio/minio`,
+          # `quay.io/minio/minio`, `bitnami/minio`) but not the `minio/mc` client.
+          # The expected port makes discovery pick the S3 API Service over the
+          # console Service (:9001) when both select the pod.
+          - id: minio
+            driver: minio
+            match:
+              ref: "(^|/)minio(:|@|$)"
+              ports: [9000]
+            credentials:
+              env:
+                username: MINIO_ROOT_USER
+                password: MINIO_ROOT_PASSWORD
